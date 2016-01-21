@@ -11,30 +11,38 @@
 Проще всего показать работу парсера на примере
 #### Пример
 ```scala
-trait SimpleParsers extends RegexpParsers {
+object SimpleParsers extends RegexpParsers {
 
   /**
-  * Парсер поиска переменных
-  */
+   * Парсер поиска переменных
+   */
   def variable = """([a-zA-Z]|\d|_)+""".r  fn NameLiteral
-  
+
   /**
-  * Парсер поиска циклов
-  */
-  def loop = ("for" ~> ("(" ~> variable ~ variable <~ ")") <~ "in") ~ variable ~ statement fn { 
-    case property ~ value ~ from ~ body => Loop(property, value, from, body) 
+   * Парсер поиска циклов
+   */
+  def loop = ("for" ~> ("(" ~> variable ~ variable <~ ")") <~ "in") ~ variable ~ statement fn {
+    case property ~ value ~ from ~ body => Loop(property, value, from, body)
   }
-  
+
   /**
-  * Парсер поиска утверждений
-  */
+   * Парсер поиска утверждений
+   */
   def statement: Parser[Statement] = block | loop
-  
+
   /**
-  * Парсер поиска блоков утверждений
-  */
+   * Парсер поиска блоков утверждений
+   */
   def block = "{" ~> statement.* <~ "}" fn {
     case body => Block(body)
+  }
+
+  def main(args: Array[String]) {
+    parse(loop, "for (property value) in object {}")
+    parse(loop,
+      """for (property value) in object {
+        | for (property value) in object {}
+        |}""".stripMargin)
   }
 
 }
